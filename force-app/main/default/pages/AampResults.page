@@ -1,0 +1,84 @@
+<apex:page standardController="AampProgram__c" extensions="AAMPResults" showHeader="true" lightningStylesheets="true" title="AAMP Results">
+    <head>
+      <style>
+      .odd { 
+        background-color: #FCF8F8;
+      }
+      .even {
+        background-color: #E3DCDB;
+      }
+      </style>
+    </head>
+    <script>
+    window.document.onload = new function(e)
+    {
+        if({!Program.Status__c != 'Open'})
+        {
+            alert("This Program is Closed or Completed.");  
+            var url = window.location.href; 
+            var value = url.substr(0,url.lastIndexOf('/') + 1);
+            window.history.back();
+            return false;
+        }
+    }
+    </script>
+    
+    <h1>AAMP Results</h1>
+    <apex:form >  
+    <apex:pageMessages id="errormsg" />
+    <apex:outputPanel rendered="{!if(aampDealers.size==1000,true,false)}">
+        <h3 style="color:red">Your Program criteria returned more than 1000 Dealership records. Please note that Programs are limited to having 1000 Enrollees.</h3>
+    </apex:outputPanel>    
+    <apex:commandButton value="Back" action="{!Cancel}" rendered="{!if(aampDealers.size==0,true,false)}"/> 
+    <apex:pageBlock rendered="{!if(aampDealers.size>0,true,false)}" id="pageblock">              
+            <apex:outputPanel id="details">
+            <apex:pageBlockTable rendered="{!if(pageaampDealers.size>0,true,false)}" value="{!pageaampDealers}" var="aamp" rowClasses="even,odd">
+                <apex:column headervalue="Number" value="{!aamp.DealerNumber}"/>
+                <apex:column headervalue="Name" value="{!aamp.Name}"/>
+                <apex:column headervalue="Status" value="{!aamp.Status}"/>
+                <apex:column headervalue="Source" value="{!aamp.Source}"/>
+                <apex:column headervalue="Last Funded Date">
+                    <apex:outputText value="{0,date,M/dd/yyyy}">
+                        <apex:param value="{!aamp.LFD}" /> 
+                    </apex:outputText>
+                </apex:column>
+                <apex:column headervalue="Sub30D" value="{!aamp.Sub30D}"/>
+                <apex:column headervalue="Fund30D" value="{!aamp.Fund30D}"/>   
+                <apex:column headervalue="Sub60D" value="{!aamp.Sub60D}"/>
+                <apex:column headervalue="Fund60D" value="{!aamp.Fund60D}"/>   
+                <apex:column headervalue="Sub90D" value="{!aamp.Sub90D}"/>
+                <apex:column headervalue="Fund90D" value="{!aamp.Fund90D}"/>   
+                <apex:column ><apex:facet name="header">Exclude</apex:facet><apex:inputCheckbox value="{!aamp.Exclude}" /></apex:column>             
+            </apex:pageBlockTable>
+            
+                <div style="margin-top:5px;">
+                    <div style="float: left;display:inline-block;">
+                    <apex:commandButton style="background:none!important;border:none;padding:0!important;cursor:pointer;" value="◄◄" reRender="pageblock" action="{!first}"/>  
+                    <apex:commandButton style="background:none!important;border:none;padding:0!important;cursor:pointer;" value="◄ Previous" reRender="pageblock" action="{!previous}" disabled="{!!hasPrevious}"/>  
+                    <apex:outputLabel style="padding-left: 20px;" value="{!intPageNumber} of {!intNumberofPages}" />  
+                    <apex:commandButton style="background:none!important;border:none;padding:0!important;cursor:pointer;" value="Next ►" reRender="pageblock" action="{!next}" disabled="{!!hasNext}"/>  
+                    <apex:commandButton style="background:none!important;border:none;padding:0!important;cursor:pointer;" value="►►" reRender="pageblock" action="{!last}"/>  &nbsp;&nbsp;&nbsp;&nbsp;
+                    </div>
+                    <div style="position:absolute; left:45%;display:inline-block;">
+                        <apex:outputPanel rendered="{!if(aampDealers.size>0,true,false)}" id="detailsA">
+                            <apex:commandButton style="margin-bottom: 3px;" value="Cancel" action="{!Cancel}"/>    
+                            <apex:commandButton value="Enroll" onclick="disableBtn(this,'Processing...');CallEnroll();return false;"/>
+                            <apex:actionFunction name="CallEnroll" action="{!Enroll}"/>
+                            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+                            <script type="text/javascript">
+                                $jq = jQuery.noConflict();
+                                function disableBtn(btn, newText) {
+                                    $jq(btn).prop('disabled',true).addClass('btnDisabled');
+                                    if (newText.length>0) $jq(btn).val(newText);
+                                }
+                            </script>                          
+                        </apex:outputPanel>
+                    </div>
+                    <div style="float: right;display:inline-block;">
+                    <apex:outputText ><b>Total Count: {!TotalCount}</b></apex:outputText>
+                    </div>                    
+                </div>
+            </apex:outputPanel>
+    </apex:pageBlock>
+        </apex:form>  
+</apex:page>
